@@ -115,14 +115,13 @@
 		});
 
 		document.getElementById('copy').addEventListener('click', function (event) {
-			// In submission mode "Copy link" shares the response (?submit, with name + values);
-			// prefer the native share sheet there so mobile gets a real send option.
+			// In submission mode "Copy link" copies the response link (?submit, with name + values).
 			var url = mode === 'submit' ? Slider.buildUrl(state, { flag: 'submit' }) : Slider.buildUrl(state);
-			Slider.deliverLink(url, { share: mode === 'submit' }, event.currentTarget);
+			Slider.copyLink(url, event.currentTarget);
 		});
 
 		document.getElementById('share').addEventListener('click', function (event) {
-			Slider.deliverLink(Slider.buildUrl(state, { flag: 'readonly' }), { share: true }, event.currentTarget);
+			Slider.copyLink(Slider.buildUrl(state, { flag: 'readonly' }), event.currentTarget);
 		});
 	}
 

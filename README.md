@@ -24,12 +24,12 @@ slider, `70% AI` on the right. It’s **mobile-first** and touch-friendly.
 - **Add aspect**, name it, drag its slider toward Human or AI.
 - **Numbered** toggles between an unordered list of aspects and a numbered one — so you can
   describe a *process* (1. brain dump → 100% human; 2. extract key ideas → 50/50; …).
-- **Copy link / Share read-only / Print / Download image** (see below).
+- **Copy link / Copy read-only link / Print / Download image** (see below).
 
 ## The three views
 
 1. **Edit** (default) — build the model: title, instructions, aspects, slider positions.
-2. **Read-only** (`Share read-only`) — a frozen view of the assignment. The app heading is
+2. **Read-only** (`Copy read-only link`) — a frozen view of the assignment. The app heading is
    replaced by *your* title + description; sliders are locked. The banner offers **Open an
    editable copy** and **Submit a response →** (both open in a new tab).
 3. **Submission** — reached from a read-only view (or a `?…&submit` link). The title,
@@ -39,15 +39,15 @@ slider, `70% AI` on the right. It’s **mobile-first** and touch-friendly.
 
 All shareable state lives in the URL; there is no server, no account, nothing stored.
 
-## Sharing on mobile
+## Copying links (incl. mobile)
 
-Sharing uses the **Web Share API** (the native share sheet) when available, then the
-clipboard, then a selectable “copy this link” field as a universal fallback.
+The Copy buttons copy a link to the clipboard, with a selectable “copy this link” field as a
+universal fallback (no native share sheet — it was intrusive).
 
-> The Clipboard and Share APIs only work in a **secure context** — `https://` or
-> `http://localhost`. Over `file://` or a plain-`http://` LAN address (e.g. testing on a
-> phone against your laptop’s IP) the browser disables them, and the tool falls back to the
-> manual copy field. For the best mobile experience, use the deployed **https** site.
+> The Clipboard API only works in a **secure context** — `https://` or `http://localhost`.
+> Over `file://` or a plain-`http://` LAN address (e.g. testing on a phone against your
+> laptop’s IP) the browser disables it, and the tool falls back to the manual copy field. For
+> the best experience, use the deployed **https** site.
 
 ## Download as image
 

@@ -228,27 +228,11 @@
   }
 
   /**
-   * Deliver a link the most mobile-friendly way available, degrading gracefully so it ALWAYS
-   * works — the previous "copy" path silently died on phones because the Clipboard API is
-   * disabled in insecure contexts (file:// or http LAN, exactly how you reach this from a
-   * phone). Order: native Share sheet (when asked + available) → Clipboard → manual field.
-   * @effects may call navigator.share / navigator.clipboard; mutates the button or #notice
-   */
-  function deliverLink(url, opts, button) {
-    opts = opts || {};
-    if (opts.share && navigator.share) {
-      navigator.share({ title: opts.title || document.title, url: url }).then(undefined, function (err) {
-        if (err && err.name === "AbortError") return; // user dismissed the share sheet
-        copyLink(url, button);
-      });
-      return;
-    }
-    copyLink(url, button);
-  }
-
-  /**
-   * Clipboard copy with a manual fallback. Clipboard works in secure contexts (https /
-   * localhost), incl. on mobile; otherwise we show a selectable field to copy by hand.
+   * Copy a link to the clipboard with a universal fallback. The buttons just COPY — no native
+   * share sheet (it was intrusive on desktop and surprising). The Clipboard API works in secure
+   * contexts (https / localhost), incl. on mobile; in insecure contexts (file:// or http LAN —
+   * how a phone reaches a dev machine) it's unavailable, so we show a selectable field to copy
+   * by hand. That manual fallback is what keeps sharing working on mobile.
    * @effects writes navigator.clipboard; mutates the button or #notice
    */
   function copyLink(url, button) {
@@ -362,5 +346,5 @@
   Slider.applyReadonly = applyReadonly;
   Slider.applySubmit = applySubmit;
   Slider.downloadImage = downloadImage;
-  Slider.deliverLink = deliverLink;
+  Slider.copyLink = copyLink;
 })(typeof globalThis !== "undefined" ? globalThis : this);

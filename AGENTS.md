@@ -80,11 +80,11 @@ Flags are never stripped, so the URL always fully determines the view. The lock 
 CSS-driven (`body.is-readonly` / `body.is-submit`); the JS just adds the class, disables the
 right inputs, and sets the banner links.
 
-**Sharing degrades gracefully** (mobile-critical): the Web Share API (native sheet) when
-available → the Clipboard API → a selectable manual “copy this link” field. Clipboard/Share are
-disabled by browsers in **insecure contexts** (`file://` or plain-`http://` LAN — how a phone
-reaches a dev machine), which is why the manual fallback exists and why the deployed **https**
-site is the real mobile target.
+**Sharing is copy-only** (the buttons copy a link; no native share sheet — it popped the OS
+panel on desktop and surprised people). Clipboard API in a secure context → a selectable manual
+“copy this link” field otherwise. The Clipboard API is disabled by browsers in **insecure
+contexts** (`file://` or plain-`http://` LAN — how a phone reaches a dev machine), which is why
+the manual fallback exists and why the deployed **https** site is the real mobile target.
 
 **Download-as-image** is a pure native-SVG string (`svg.js`, no `<foreignObject>`) rasterized on
 a canvas to PNG — so it never taints the canvas, needs no library, and works offline.
@@ -104,7 +104,7 @@ labels, multi-line text); fail-soft decode; `detectMode` (edit/readonly/submit);
 **Verified in real browser engines (the shell), not unit-tested:** the three modes and their
 control/visibility swaps; ordered numbering; the read-only banner’s edit + submit links;
 submission mode (name + sliders editable, structure locked, `?submit` persisted); the
-share/copy fallbacks; download → SVG→PNG with no canvas taint; fail-soft notice; mobile +
+copy-link clipboard + manual fallback; download → SVG→PNG with no canvas taint; fail-soft notice; mobile +
 desktop layouts; print. Exercised against headless **Chrome** (mobile emulation via
 puppeteer-core: tap, touch-drag, screenshots) and real **WebKit** (playwright-core, iPhone
 device) driving the system browsers.
@@ -116,8 +116,8 @@ device) driving the system browsers.
 > device width + touch (puppeteer-core) and a real WebKit engine (playwright-core) — they live
 > in `/tmp/mobtest/` as dev-only tools, never project dependencies.
 
-**Left to a human interactive pass:** clipboard copy on a genuinely insecure phone origin, and
-the native share sheet UX. They ride the code paths the emulation confirmed.
+**Left to a human interactive pass:** clipboard copy on a genuinely insecure phone origin (the
+manual fallback field). It rides the code paths the emulation confirmed.
 
 ## Conventions followed, and relaxed
 
