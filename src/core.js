@@ -83,7 +83,7 @@
 			schemaVersion: SCHEMA_VERSION,
 			title: '',
 			instructions: '',
-			rows: [{ id: 'r1', label: '', value: VALUE_DEFAULT }],
+			rows: [{ id: 'r1', label: '', value: VALUE_DEFAULT, note: '' }],
 			ordered: false, // numbered (process steps) vs unordered (independent aspects)
 			name: '', // the responder's name, filled in submission mode
 			readonly: false,
@@ -109,7 +109,7 @@
 	 * @param {object} state @returns {object}
 	 */
 	function addRow(state) {
-		var row = { id: nextId(state.rows), label: '', value: VALUE_DEFAULT };
+		var row = { id: nextId(state.rows), label: '', value: VALUE_DEFAULT, note: '' };
 		return deepFreeze(merge(state, { rows: state.rows.concat([row]) }));
 	}
 
@@ -133,9 +133,10 @@
 		if (!patch) patch = {};
 		var rows = state.rows.map(function (row) {
 			if (row.id !== id) return row;
-			var next = { id: row.id, label: row.label, value: row.value };
+			var next = { id: row.id, label: row.label, value: row.value, note: row.note };
 			if (typeof patch.label === 'string') next.label = patch.label;
 			if ('value' in patch) next.value = clamp(patch.value);
+			if (typeof patch.note === 'string') next.note = patch.note;
 			return next;
 		});
 		return deepFreeze(merge(state, { rows: rows }));
@@ -159,6 +160,7 @@
 					id: typeof row.id === 'string' && row.id ? row.id : 'r' + (i + 1),
 					label: typeof row.label === 'string' ? row.label : '',
 					value: clamp(row.value),
+					note: typeof row.note === 'string' ? row.note : '',
 				};
 			});
 

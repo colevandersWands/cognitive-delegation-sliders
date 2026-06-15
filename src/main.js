@@ -64,6 +64,10 @@
 				state = Slider.updateRow(state, id, { label: label });
 				Slider.applySliderAria(li.querySelector('.row-slider'), label, valueOf(id));
 				Slider.syncUrl(state);
+			} else if (event.target.classList.contains('row-note')) {
+				state = Slider.updateRow(state, id, { note: event.target.value });
+				Slider.autoGrow(event.target);
+				Slider.syncUrl(state);
 			}
 		});
 

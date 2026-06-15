@@ -94,6 +94,15 @@
 			parts.push('<circle cx="' + dotX.toFixed(1) + '" cy="' + cy + '" r="7" fill="#1a1a1a"/>');
 			parts.push(textEl(TRACK_X + TRACK_W + 15, cy + 5, v + '% AI', 'font-size:13px;fill:#585858'));
 			y += ROW_H;
+
+			// A responder's free-response note, wrapped and indented beneath the slider.
+			if (row.note) {
+				wrap(row.note, 96).forEach(function (line) {
+					parts.push(textEl(PAD + 14, y, esc(line), 'font-size:13px;fill:#585858;font-style:italic'));
+					y += 17;
+				});
+				y += 8;
+			}
 		}
 
 		var H = Math.round(y + PAD);

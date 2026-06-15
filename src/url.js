@@ -29,7 +29,7 @@
 			o: state.ordered ? 1 : 0,
 			nm: state.name,
 			r: state.rows.map(function (row) {
-				return { i: row.id, l: row.label, x: row.value };
+				return { i: row.id, l: row.label, x: row.value, c: row.note };
 			}),
 		};
 		return JSON.stringify(payload);
@@ -70,7 +70,7 @@
 			name: parsed.nm,
 			rows: Array.isArray(parsed.r)
 				? parsed.r.map(function (row) {
-						return { id: row && row.i, label: row && row.l, value: row && row.x };
+						return { id: row && row.i, label: row && row.l, value: row && row.x, note: row && row.c };
 					})
 				: undefined,
 		});

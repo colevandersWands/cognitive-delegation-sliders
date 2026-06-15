@@ -48,6 +48,9 @@
 
 		var named = { schemaVersion: 2, title: '', instructions: '', ordered: false, name: 'Ada Lovelace', rows: S.defaultState().rows };
 		T.eq('preserves the responder name', roundTrip(named).state.name, 'Ada Lovelace');
+
+		var withNote = { schemaVersion: 2, title: '', instructions: '', ordered: false, name: '', rows: [{ id: 'r1', label: 'x', value: 50, note: 'I struggled, then asked' }] };
+		T.eq('preserves a per-row note', roundTrip(withNote).state.rows[0].note, 'I struggled, then asked');
 	});
 
 	T.group('decodeState fail-soft', function () {

@@ -75,7 +75,16 @@
     remove.textContent = "×";
     remove.setAttribute("aria-label", "Remove task");
 
-    li.append(head, human, slider, ai, remove);
+    // Per-aspect free response — shown only in submission mode (CSS-gated). Carries into the
+    // URL, print, and downloaded image. Spans the full row, below the slider.
+    var note = document.createElement("textarea");
+    note.className = "row-note";
+    note.rows = 2;
+    note.placeholder = "How and why did you place this? (optional)";
+    note.value = row.note || "";
+    note.setAttribute("aria-label", "How and why you placed this slider");
+
+    li.append(head, human, slider, ai, remove, note);
     return li;
   }
 
@@ -196,10 +205,12 @@
   function applySubmit() {
     currentMode = "submit";
     document.body.classList.add("is-submit");
-    lockInputs("#title, #instructions, .row-label"); // NOT .row-slider — those stay editable
+    lockInputs("#title, #instructions, .row-label"); // NOT .row-slider / .row-note — those stay editable
     hideFieldIfEmpty("title");
     hideFieldIfEmpty("instructions");
     sizeInstructions();
+    var notes = document.querySelectorAll(".row-note");
+    for (var i = 0; i < notes.length; i += 1) autoGrow(notes[i]);
   }
 
   /** @effects disables matching inputs and marks them aria-readonly */
@@ -211,11 +222,15 @@
     }
   }
 
-  /** @effects grows the instructions textarea to fit its content (so it reads as a block) */
-  function sizeInstructions() {
-    var el = document.getElementById("instructions");
+  /** @effects grows a textarea to fit its content (so it reads as a block, not a fixed box) */
+  function autoGrow(el) {
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
+  }
+
+  /** @effects sizes the instructions textarea to its content */
+  function sizeInstructions() {
+    autoGrow(document.getElementById("instructions"));
   }
 
   /** @effects mutates the field wrapper's hidden state */
@@ -347,4 +362,5 @@
   Slider.applySubmit = applySubmit;
   Slider.downloadImage = downloadImage;
   Slider.copyLink = copyLink;
+  Slider.autoGrow = autoGrow;
 })(typeof globalThis !== "undefined" ? globalThis : this);

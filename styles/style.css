@@ -287,6 +287,28 @@ body.is-submit .instructions-input {
 	border-color: var(--line);
 }
 
+/* Per-aspect free response. Spans the full row below the slider; only placed (and shown) in
+   submission mode, so it adds no empty grid track in edit/read-only views. */
+.row-note {
+	grid-column: 1 / -1;
+	display: none;
+	width: 100%;
+	margin-top: 0.35rem;
+	font-family: inherit;
+	font-size: 0.9rem;
+	color: var(--ink);
+	background: transparent;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	padding: 0.4rem 0.5rem;
+	resize: none;
+	overflow: hidden;
+}
+
+body.is-submit .row-note {
+	display: block;
+}
+
 /* --- controls (touch-friendly) --- */
 
 .controls {
@@ -516,7 +538,8 @@ body.is-submit .instructions-input {
 
 	.title-input,
 	.instructions-input,
-	.row-label {
+	.row-label,
+	.row-note {
 		border: 0;
 		padding: 0;
 		color: #000;

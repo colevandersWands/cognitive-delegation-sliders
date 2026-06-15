@@ -64,6 +64,7 @@
 		T.eq('starts not read-only', S.defaultState().readonly, false);
 		T.eq('starts unordered', S.defaultState().ordered, false);
 		T.eq('starts with no name', S.defaultState().name, '');
+		T.eq('starts the row with an empty note', S.defaultState().rows[0].note, '');
 		T.ok('returns a frozen object', Object.isFrozen(S.defaultState()));
 	});
 
@@ -112,6 +113,9 @@
 			S.updateRow(S.defaultState(), 'nope', { value: 0 }).rows[0].value,
 			S.VALUE_DEFAULT,
 		);
+		T.eq('patches the note', S.updateRow(S.defaultState(), 'r1', { note: 'because X' }).rows[0].note, 'because X');
+		var noted = S.updateRow(S.defaultState(), 'r1', { note: 'because X' });
+		T.eq('keeps the note when patching value', S.updateRow(noted, 'r1', { value: 10 }).rows[0].note, 'because X');
 	});
 
 	T.group('validateState', function () {
@@ -135,5 +139,7 @@
 		T.eq('defaults ordered to false', S.validateState({ rows: [] }).ordered, false);
 		T.eq('keeps a string name', S.validateState({ rows: [], name: 'Ada' }).name, 'Ada');
 		T.eq('defaults a missing name to empty', S.validateState({ rows: [] }).name, '');
+		T.eq('repairs a missing row note to empty', S.validateState({ rows: [{ id: 'r1', value: 10 }] }).rows[0].note, '');
+		T.eq('keeps a row note', S.validateState({ rows: [{ id: 'r1', value: 10, note: 'why' }] }).rows[0].note, 'why');
 	});
 })(typeof globalThis !== 'undefined' ? globalThis : this);

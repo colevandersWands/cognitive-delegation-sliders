@@ -29,5 +29,7 @@
 		T.ok('escapes XML-special characters in the title', svgOf({ title: 'a & b' }).indexOf('a &amp; b') !== -1);
 		T.ok('numbers aspects when ordered', svgOf({ ordered: true, rows: [{ id: 'r1', label: 'Step', value: 0 }] }).indexOf('1. Step') !== -1);
 		T.ok('does not number aspects when unordered', svgOf({ ordered: false, rows: [{ id: 'r1', label: 'Step', value: 0 }] }).indexOf('1. Step') === -1);
+		T.ok('includes a row note when present', svgOf({ rows: [{ id: 'r1', label: 'x', value: 30, note: 'my reasoning' }] }).indexOf('my reasoning') !== -1);
+		T.ok('omits empty notes', svgOf({ rows: [{ id: 'r1', label: 'x', value: 30, note: '' }] }).indexOf('font-style:italic') === -1);
 	});
 })(typeof globalThis !== 'undefined' ? globalThis : this);
