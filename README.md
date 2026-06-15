@@ -1,105 +1,117 @@
 # Human–AI Slider Model
 
 An interactive, single-page tool for placing tasks on a spectrum from **Productive
-Struggle** (human) to **Cognitive Delegation** (AI) — then sharing the result as a link or
-printing it as a rubric.
+Struggle** (human) to **Cognitive Delegation** (AI) — then sharing the result as a link,
+printing it, or downloading it as an image.
 
-It’s a thinking tool, not a set of rules. An educator can scope an assignment by setting
-where each task *should* sit and sharing a read-only link; a learner can record where their
-work *actually* sat. The reasoning behind the framework lives in the **About this framework**
-panel on the page itself.
+It’s a thinking tool, not a set of rules. The reasoning behind the framework lives in the
+**About this framework** panel on the page itself.
 
 > Replaces the 2-D quadrant in the `collAIboration` “Human+AI Collaboration Roles” pedagogy
 > quick-read with a per-task 1-D spectrum.
+>
+> Repo: <https://github.com/colevandersWands/cognitive-delegation-sliders> ·
+> Live: <https://colevandersWands.github.io/cognitive-delegation-sliders/>
 
 ## Open it
 
 **Just open `index.html` in a browser** — double-click it. No server, no build, no install.
-The whole tool is plain HTML/CSS/JS (classic scripts), so it runs straight off the
-filesystem.
+Everything is plain HTML/CSS/JS (classic scripts), so it runs straight off the filesystem.
 
-Each task shows the split as complementary percentages — `30% human` on the left of the
-slider, `70% AI` on the right.
+Each aspect shows the split as complementary percentages — `30% human` on the left of the
+slider, `70% AI` on the right. It’s **mobile-first** and touch-friendly.
 
-- **Add a task**, name it, and drag its slider toward Human or AI.
-- **Copy link** — a normal, editable link that restores exactly what’s on screen.
-- **Share read-only** — the same state, locked. The shared view drops the app heading and
-  shows *your* title and description instead, with the sliders fixed. It offers an **Open an
-  editable copy** link (opens in a new tab). The lock is a *shared intent*, not enforcement —
-  see the About panel.
-- **Print** — a clean, black-on-white one-page rubric.
+- **Add aspect**, name it, drag its slider toward Human or AI.
+- **Numbered** toggles between an unordered list of aspects and a numbered one — so you can
+  describe a *process* (1. brain dump → 100% human; 2. extract key ideas → 50/50; …).
+- **Copy link / Share read-only / Print / Download image** (see below).
 
-It’s **mobile-first**: rows stack and the controls reflow on a phone; the slider has a
-touch-sized target.
+## The three views
 
-All state lives in the URL — no server, no account, nothing stored. Bookmark or share the
-URL and you’ve saved your work. (Clipboard “copy” needs a secure context: it works when
-served over `http://localhost` or `https://`; from `file://` it falls back to showing the
-link to copy by hand.)
+1. **Edit** (default) — build the model: title, instructions, aspects, slider positions.
+2. **Read-only** (`Share read-only`) — a frozen view of the assignment. The app heading is
+   replaced by *your* title + description; sliders are locked. The banner offers **Open an
+   editable copy** and **Submit a response →** (both open in a new tab).
+3. **Submission** — reached from a read-only view (or a `?…&submit` link). The title,
+   description, and aspect labels are locked, but the responder can **move the sliders** and
+   fill in a **name**, then Copy link / Print / Download image to submit what they actually
+   did. The link, print, and image all carry title + description + name + slider positions.
 
-## Run a local server (optional)
+All shareable state lives in the URL; there is no server, no account, nothing stored.
 
-Only needed if you want the clipboard buttons over a real origin. No Python required:
+## Sharing on mobile
 
-```sh
-npm run serve     # npx serve .  → http://localhost:3000
-```
+Sharing uses the **Web Share API** (the native share sheet) when available, then the
+clipboard, then a selectable “copy this link” field as a universal fallback.
+
+> The Clipboard and Share APIs only work in a **secure context** — `https://` or
+> `http://localhost`. Over `file://` or a plain-`http://` LAN address (e.g. testing on a
+> phone against your laptop’s IP) the browser disables them, and the tool falls back to the
+> manual copy field. For the best mobile experience, use the deployed **https** site.
+
+## Download as image
+
+`Download image` renders the whole model — title, description, name, and each aspect’s
+slider — as a PNG. It’s built from a pure native-SVG string (`svg.js`) and rasterized on a
+canvas; no third-party library, no `<foreignObject>`, so it works offline and untainted.
 
 ## Test it
 
-The pure logic (URL codec, validation, clamping, the human/AI readouts, row operations) has
-one shared set of specs that runs **two ways**, with zero dependencies:
+One shared set of specs runs **two ways**, zero dependencies:
 
-- **In a browser** — open `tests/core.test.html` and `tests/url.test.html`. Each renders a
-  green/red report. Opens off the filesystem like everything else.
-- **In Node (the CI gate)** — `npm test` (runs `node tests/run.js`), exits non-zero on any
-  failure.
+- **In a browser** — open `tests/core.test.html`, `tests/url.test.html`, `tests/svg.test.html`.
+  Each renders a green/red report; opens off the filesystem.
+- **In Node (the CI gate)** — `npm test` (`node tests/run.js`), exits non-zero on failure.
 
-Same assertions, both places. The DOM/URL/clipboard shell (`ui.js`, `main.js`) is verified
-in the browser — see `AGENTS.md`.
+The pure core (state, URL codec, percentages, SVG builder) is fully spec’d; the DOM/URL/
+clipboard/print/image shell is browser-verified (incl. real WebKit + mobile Chrome — see
+`AGENTS.md`).
 
-## Deploy it (GitHub Pages)
+## Run a local server (optional)
 
-`.github/workflows/deploy.yml` runs the specs, then publishes the folder as-is. One-time
-setup, since this is its own repository:
+Only needed for the clipboard buttons over a real origin (no Python required):
+
+```sh
+npm run serve     # npx serve .
+```
+
+## Deploy (GitHub Pages)
+
+`.github/workflows/deploy.yml` runs the specs, then publishes the folder as-is:
 
 1. `git init && git add -A && git commit -m "init" && git branch -M main`
-2. Create the GitHub repo and push (`gh repo create <user>/<repo> --public --source=. --push`).
-3. In the repo: **Settings → Pages → Source = “GitHub Actions.”**
-4. The site goes live at `https://<user>.github.io/<repo>/`.
+2. `gh repo create colevandersWands/cognitive-delegation-sliders --public --source=. --push`
+3. Repo **Settings → Pages → Source = “GitHub Actions.”**
 
-Asset paths are all relative, so it works under the `/<repo>/` sub-path.
+Asset paths are relative, so it works under the `/cognitive-delegation-sliders/` sub-path.
 
 ## How it’s built
 
-Plain HTML/CSS/JS — no framework, no bundler, no dependencies, no ES modules. Every file is a
-classic `<script>` attaching to one global `Slider` namespace, in dependency order.
+Plain HTML/CSS/JS — no framework, no bundler, no dependencies, no ES modules. Every file is
+a classic `<script>` attaching to one global `Slider` namespace, in dependency order.
 
 ```text
-index.html            shell + the “About this framework” copy
-styles/style.css      mobile-first layout, type, controls, read-only swap, print chrome
+index.html            shell + GitHub corner + the “About this framework” copy
+styles/style.css      mobile-first layout, type, controls, read-only/submit swap, print
 styles/slider.css     the hand-drawn native-range slider (the cross-browser part)
 src/core.js           pure: state ops, clamp, human/AI readouts, validation
-src/url.js            pure: encode/decode the URL, fail-soft
-src/ui.js             shell: DOM rendering, URL sync, clipboard  (effects marked @effects)
+src/url.js            pure: encode/decode URL (fail-soft), detectMode
+src/svg.js            pure: buildSvg(state) — the downloadable image
+src/ui.js             shell: render, URL sync, share/clipboard, modes, image  (@effects)
 src/main.js           shell: bootstrap + event wiring
 tests/harness.js      tiny zero-dep assert harness (browser + Node)
-tests/core.spec.js    shared specs for core.js
-tests/url.spec.js     shared specs for url.js
+tests/*.spec.js       shared specs for core / url / svg
 tests/*.test.html     in-browser test pages
 tests/run.js          Node runner for the CI gate
 ```
-
-The split is deliberate: a **pure, tested core** and a clearly-marked **effectful shell**.
-`AGENTS.md` documents that decision, the stance behind it, and the test discipline.
 
 ## Framework attribution
 
 The framework — Productive Struggle ↔ Cognitive Delegation, “a thinking tool, not rules,”
 Diagnostic vs Prescriptive use, “understanding is non-delegable,” and the prerequisites
-caveat — is drawn from Evan Cole’s `collAIboration` quick-read and the *Welcome to
-Frogramming* curriculum. The on-page copy stays faithful to those sources.
+caveat — is drawn from the `collAIboration` quick-read and the *Welcome to Frogramming*
+curriculum. The GitHub corner is Tim Holman’s [github-corners](https://tholman.com/github-corners/) (MIT).
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE). © 2026 Evan Cole, Joslenne Peña, Janet Tilstra.

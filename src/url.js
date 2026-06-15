@@ -26,6 +26,8 @@
 			v: Slider.SCHEMA_VERSION,
 			t: state.title,
 			n: state.instructions,
+			o: state.ordered ? 1 : 0,
+			nm: state.name,
 			r: state.rows.map(function (row) {
 				return { i: row.id, l: row.label, x: row.value };
 			}),
@@ -64,6 +66,8 @@
 		var valid = Slider.validateState({
 			title: parsed.t,
 			instructions: parsed.n,
+			ordered: parsed.o === 1 || parsed.o === true,
+			name: parsed.nm,
 			rows: Array.isArray(parsed.r)
 				? parsed.r.map(function (row) {
 						return { id: row && row.i, label: row && row.l, value: row && row.x };
@@ -78,14 +82,20 @@
 	}
 
 	/**
-	 * Read-only is presence-only: `?readonly`, `?readonly=`, `?readonly=false` all lock.
-	 * @param {URLSearchParams} params @returns {boolean}
+	 * Which view to render, from presence-only URL flags:
+	 *   ?readonly -> 'readonly' (frozen assignment),
+	 *   ?submit   -> 'submit'   (responder fills sliders + name; structure locked),
+	 *   neither   -> 'edit'.
+	 * `readonly` wins if both are somehow present.
+	 * @param {URLSearchParams} params @returns {'edit'|'readonly'|'submit'}
 	 */
-	function detectReadonly(params) {
-		return params.has('readonly');
+	function detectMode(params) {
+		if (params.has('readonly')) return 'readonly';
+		if (params.has('submit')) return 'submit';
+		return 'edit';
 	}
 
 	Slider.encodeState = encodeState;
 	Slider.decodeState = decodeState;
-	Slider.detectReadonly = detectReadonly;
+	Slider.detectMode = detectMode;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -16,22 +16,29 @@
 	var params = new URLSearchParams(window.location.search);
 	var decoded = Slider.decodeState(params);
 	var state = decoded.state;
+	var mode = Slider.detectMode(params); // 'edit' | 'readonly' | 'submit'
 
 	if (!decoded.ok && decoded.reason !== 'missing') {
 		Slider.showNotice(NOTICES[decoded.reason] || 'Showing a fresh model.');
 	}
 
 	Slider.renderApp(state);
+	document.getElementById('ordered-toggle').setAttribute('aria-pressed', String(!!state.ordered));
 
-	// Print works in both modes; wire it before branching.
+	// Print + Download work in whichever modes show them; wire before branching.
 	document.getElementById('print').addEventListener('click', function () {
 		window.print();
 	});
+	document.getElementById('download').addEventListener('click', function () {
+		Slider.downloadImage(state);
+	});
 
-	if (Slider.detectReadonly(params)) {
+	if (mode === 'readonly') {
 		Slider.applyReadonly();
 	} else {
-		// Sync the loaded (possibly default) state so "Copy link" always reflects what's shown.
+		// Submission mode locks the structure (title/instructions/labels) before wiring, so
+		// those inputs won't fire; sliders and the name field stay live. Edit mode is fully live.
+		if (mode === 'submit') Slider.applySubmit();
 		Slider.syncUrl(state);
 		wireEditing();
 	}
@@ -78,6 +85,11 @@
 			Slider.syncUrl(state);
 		});
 
+		document.getElementById('name').addEventListener('input', function (event) {
+			state = setField(state, 'name', event.target.value);
+			Slider.syncUrl(state);
+		});
+
 		document.getElementById('add').addEventListener('click', function () {
 			state = Slider.addRow(state);
 			var fresh = state.rows[state.rows.length - 1];
@@ -90,16 +102,27 @@
 		document.getElementById('reset').addEventListener('click', function () {
 			state = Slider.defaultState();
 			Slider.renderApp(state);
+			document.getElementById('ordered-toggle').setAttribute('aria-pressed', 'false');
 			Slider.showNotice('');
 			Slider.syncUrl(state);
 		});
 
+		document.getElementById('ordered-toggle').addEventListener('click', function (event) {
+			state = setField(state, 'ordered', !state.ordered);
+			document.getElementById('rows').classList.toggle('ordered', state.ordered);
+			event.currentTarget.setAttribute('aria-pressed', String(state.ordered));
+			Slider.syncUrl(state);
+		});
+
 		document.getElementById('copy').addEventListener('click', function (event) {
-			Slider.copyToClipboard(Slider.buildUrl(state), event.currentTarget);
+			// In submission mode "Copy link" shares the response (?submit, with name + values);
+			// prefer the native share sheet there so mobile gets a real send option.
+			var url = mode === 'submit' ? Slider.buildUrl(state, { flag: 'submit' }) : Slider.buildUrl(state);
+			Slider.deliverLink(url, { share: mode === 'submit' }, event.currentTarget);
 		});
 
 		document.getElementById('share').addEventListener('click', function (event) {
-			Slider.copyToClipboard(Slider.buildUrl(state, { readonly: true }), event.currentTarget);
+			Slider.deliverLink(Slider.buildUrl(state, { flag: 'readonly' }), { share: true }, event.currentTarget);
 		});
 	}
 

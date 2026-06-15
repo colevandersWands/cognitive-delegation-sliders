@@ -31,6 +31,16 @@
     label.value = row.label;
     label.setAttribute("aria-label", "Task name");
 
+    // The number (shown only when "Numbered") is filled by a CSS counter, so it stays
+    // correct as rows are added/removed without per-row bookkeeping here.
+    var num = document.createElement("span");
+    num.className = "row-num";
+    num.setAttribute("aria-hidden", "true");
+
+    var head = document.createElement("div");
+    head.className = "row-head";
+    head.append(num, label);
+
     var human = document.createElement("span");
     human.className = "row-human";
     human.setAttribute("aria-hidden", "true");
@@ -65,7 +75,7 @@
     remove.textContent = "×";
     remove.setAttribute("aria-label", "Remove task");
 
-    li.append(label, human, slider, ai, remove);
+    li.append(head, human, slider, ai, remove);
     return li;
   }
 
@@ -95,7 +105,9 @@
   function renderApp(state) {
     document.getElementById("title").value = state.title;
     document.getElementById("instructions").value = state.instructions;
+    document.getElementById("name").value = state.name;
     var list = document.getElementById("rows");
+    list.classList.toggle("ordered", !!state.ordered);
     list.replaceChildren.apply(list, state.rows.map(renderRow));
   }
 
@@ -109,14 +121,17 @@
     el.hidden = !message;
   }
 
-  // rAF-coalesced URL writer. The mutable module-level handles are the one place this file
-  // keeps state — sanctioned because we're throttling a browser API, not modelling data.
+  // rAF-coalesced URL writer + current view mode. The mutable module-level handles are the
+  // one place this file keeps state — sanctioned because we're throttling a browser API and
+  // tracking the URL flag, not modelling domain data.
   var rafHandle = 0;
   var pendingState = null;
+  var currentMode = "edit"; // 'edit' | 'readonly' | 'submit'
 
   /**
    * Project the current state into the URL via replaceState, at most once per animation
-   * frame so dragging a slider doesn't thrash. Never pushes history; never writes readonly.
+   * frame so dragging a slider doesn't thrash. Preserves ?submit so a responder's edits stay
+   * in submission mode; never pushes history.
    * @effects writes window.history.replaceState
    */
   function syncUrl(state) {
@@ -126,72 +141,81 @@
       rafHandle = 0;
       var params = new URLSearchParams();
       params.set("d", Slider.encodeState(pendingState));
+      if (currentMode === "submit") params.set("submit", "1");
       history.replaceState(null, "", "?" + params.toString());
     });
   }
 
   /**
-   * Build an absolute shareable URL straight from state (not from location), avoiding a
-   * race on a fresh visit where syncUrl's rAF hasn't yet written `?d=…`. Pass
-   * { readonly: true } for a locked assignment link.
+   * Build an absolute shareable URL straight from state (not from location), avoiding a race
+   * on a fresh visit where syncUrl's rAF hasn't yet written `?d=…`. opts.flag adds a mode
+   * flag: 'readonly' (locked assignment) or 'submit' (response).
    * @effects reads window.location (origin + pathname only)
    */
   function buildUrl(state, opts) {
     var params = new URLSearchParams();
     params.set("d", Slider.encodeState(state));
-    if (opts && opts.readonly) params.set("readonly", "1");
-    return (
-      window.location.origin +
-      window.location.pathname +
-      "?" +
-      params.toString()
-    );
+    var flag = opts && opts.flag;
+    if (flag) params.set(flag, "1");
+    return window.location.origin + window.location.pathname + "?" + params.toString();
   }
 
-  /**
-   * The same URL with the readonly flag removed — an editable copy of a shared view.
-   * @effects reads window.location
-   */
-  function editCopyUrl() {
+  /** The current URL re-flagged for a mode (drops the others). @effects reads window.location */
+  function modeUrl(flag) {
     var url = new URL(window.location.href);
     url.searchParams.delete("readonly");
+    url.searchParams.delete("submit");
+    if (flag) url.searchParams.set(flag, "1");
     return url.href;
   }
 
   /**
-   * Lock the page into the read-only shared view: swap the masthead heading for the saved
-   * title/description, disable inputs, hide editing controls, reveal the banner, and point
-   * "Open an editable copy" (a new tab) at the same URL minus readonly.
+   * Read-only shared view: swap the masthead for the saved title/description, lock everything,
+   * reveal the banner, and point its links at an editable copy and a submission. Control
+   * visibility is CSS-driven (body.is-readonly).
    * @effects mutates many DOM nodes
    */
   function applyReadonly() {
+    currentMode = "readonly";
     document.body.classList.add("is-readonly");
-
-    var inputs = document.querySelectorAll(
-      "#title, #instructions, .row-label, .row-slider",
-    );
-    for (var i = 0; i < inputs.length; i += 1) {
-      inputs[i].setAttribute("disabled", "");
-      inputs[i].setAttribute("aria-readonly", "true");
-    }
-    var hide = document.querySelectorAll(
-      ".row-remove, #add, #reset, #copy, #share",
-    );
-    for (var j = 0; j < hide.length; j += 1) {
-      hide[j].hidden = true;
-    }
-
-    // Hide empty title/instructions so we don't render placeholder text as a heading.
+    lockInputs("#title, #instructions, .row-label, .row-slider");
     hideFieldIfEmpty("title");
     hideFieldIfEmpty("instructions");
-
-    // Size the instructions textarea to its content so a longer description isn't clipped.
-    var instructions = document.getElementById("instructions");
-    instructions.style.height = "auto";
-    instructions.style.height = instructions.scrollHeight + "px";
-
+    sizeInstructions();
     document.getElementById("banner").hidden = false;
-    document.getElementById("editcopy").href = editCopyUrl();
+    document.getElementById("editcopy").href = modeUrl(null);
+    document.getElementById("submitlink").href = modeUrl("submit");
+  }
+
+  /**
+   * Submission view: the teacher's title/description/labels are locked, but the responder can
+   * move the sliders and fill in their name. Control + name visibility is CSS-driven
+   * (body.is-submit).
+   * @effects mutates many DOM nodes
+   */
+  function applySubmit() {
+    currentMode = "submit";
+    document.body.classList.add("is-submit");
+    lockInputs("#title, #instructions, .row-label"); // NOT .row-slider — those stay editable
+    hideFieldIfEmpty("title");
+    hideFieldIfEmpty("instructions");
+    sizeInstructions();
+  }
+
+  /** @effects disables matching inputs and marks them aria-readonly */
+  function lockInputs(selector) {
+    var els = document.querySelectorAll(selector);
+    for (var i = 0; i < els.length; i += 1) {
+      els[i].setAttribute("disabled", "");
+      els[i].setAttribute("aria-readonly", "true");
+    }
+  }
+
+  /** @effects grows the instructions textarea to fit its content (so it reads as a block) */
+  function sizeInstructions() {
+    var el = document.getElementById("instructions");
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
   }
 
   /** @effects mutates the field wrapper's hidden state */
@@ -204,21 +228,68 @@
   }
 
   /**
-   * Copy text to the clipboard, flashing the button on success. On failure (insecure
-   * context, file://, or no Clipboard API) fall back to showing the link for manual copy.
-   * @effects writes navigator.clipboard; mutates the button and possibly #notice
+   * Deliver a link the most mobile-friendly way available, degrading gracefully so it ALWAYS
+   * works — the previous "copy" path silently died on phones because the Clipboard API is
+   * disabled in insecure contexts (file:// or http LAN, exactly how you reach this from a
+   * phone). Order: native Share sheet (when asked + available) → Clipboard → manual field.
+   * @effects may call navigator.share / navigator.clipboard; mutates the button or #notice
    */
-  function copyToClipboard(text, button) {
-    var done = function () {
-      flashCopied(button);
-    };
-    var fallback = function () {
-      showNotice("Copy this link: " + text);
-    };
+  function deliverLink(url, opts, button) {
+    opts = opts || {};
+    if (opts.share && navigator.share) {
+      navigator.share({ title: opts.title || document.title, url: url }).then(undefined, function (err) {
+        if (err && err.name === "AbortError") return; // user dismissed the share sheet
+        copyLink(url, button);
+      });
+      return;
+    }
+    copyLink(url, button);
+  }
+
+  /**
+   * Clipboard copy with a manual fallback. Clipboard works in secure contexts (https /
+   * localhost), incl. on mobile; otherwise we show a selectable field to copy by hand.
+   * @effects writes navigator.clipboard; mutates the button or #notice
+   */
+  function copyLink(url, button) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, fallback);
+      navigator.clipboard.writeText(url).then(
+        function () {
+          flashCopied(button);
+        },
+        function () {
+          showCopyField(url);
+        },
+      );
     } else {
-      fallback();
+      showCopyField(url);
+    }
+  }
+
+  /**
+   * Last-resort manual copy: a read-only, pre-selected field in the notice region. Works in
+   * every context (file://, http LAN, old browsers) — the user taps it and copies.
+   * @effects mutates #notice
+   */
+  function showCopyField(url) {
+    var notice = document.getElementById("notice");
+    notice.textContent = "";
+    var label = document.createElement("span");
+    label.textContent = "Copy this link: ";
+    var input = document.createElement("input");
+    input.type = "text";
+    input.readOnly = true;
+    input.value = url;
+    input.className = "copy-field";
+    input.setAttribute("aria-label", "Shareable link");
+    notice.append(label, input);
+    notice.hidden = false;
+    input.focus();
+    input.select();
+    try {
+      input.setSelectionRange(0, url.length);
+    } catch (e) {
+      /* some inputs reject setSelectionRange; selection above is enough */
     }
   }
 
@@ -233,6 +304,55 @@
     }, 1200);
   }
 
+  /**
+   * Download the whole model as a PNG. The image is built as a pure native-SVG string
+   * (buildSvg, in svg.js) — no foreignObject — so drawing it to a canvas does NOT taint it
+   * and toBlob() succeeds. Rendered at 2x for a crisp result.
+   * @effects creates an object URL, a canvas, and a temporary download link
+   */
+  function downloadImage(state) {
+    var svg = Slider.buildSvg(state);
+    var svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+    var img = new Image();
+    img.onload = function () {
+      var scale = 2;
+      var canvas = document.createElement("canvas");
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      var ctx = canvas.getContext("2d");
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(svgUrl);
+      canvas.toBlob(function (png) {
+        var href = URL.createObjectURL(png);
+        var a = document.createElement("a");
+        a.href = href;
+        a.download = (state.title ? slugify(state.title) : "human-ai-slider") + ".png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () {
+          URL.revokeObjectURL(href);
+        }, 1000);
+      }, "image/png");
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(svgUrl);
+      showNotice("Couldn't generate the image.");
+    };
+    img.src = svgUrl;
+  }
+
+  function slugify(text) {
+    return (
+      text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60) || "human-ai-slider"
+    );
+  }
+
   Slider.renderRow = renderRow;
   Slider.applySliderAria = applySliderAria;
   Slider.renderApp = renderApp;
@@ -240,5 +360,7 @@
   Slider.syncUrl = syncUrl;
   Slider.buildUrl = buildUrl;
   Slider.applyReadonly = applyReadonly;
-  Slider.copyToClipboard = copyToClipboard;
+  Slider.applySubmit = applySubmit;
+  Slider.downloadImage = downloadImage;
+  Slider.deliverLink = deliverLink;
 })(typeof globalThis !== "undefined" ? globalThis : this);

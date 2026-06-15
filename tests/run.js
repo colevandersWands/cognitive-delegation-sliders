@@ -8,9 +8,11 @@
 
 require('../src/core.js');
 require('../src/url.js');
+require('../src/svg.js');
 require('./harness.js');
 require('./core.spec.js');
 require('./url.spec.js');
+require('./svg.spec.js');
 
 var failures = globalThis.T.report('all specs');
 process.exit(failures ? 1 : 0);

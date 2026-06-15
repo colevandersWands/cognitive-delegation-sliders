@@ -80,7 +80,8 @@ body {
 }
 
 .title-input,
-.instructions-input {
+.instructions-input,
+.name-input {
 	width: 100%;
 	font-family: inherit;
 	color: var(--ink);
@@ -88,6 +89,15 @@ body {
 	border: 1px solid var(--line);
 	border-radius: 5px;
 	padding: 0.55rem 0.65rem;
+}
+
+/* The name field appears only in submission mode. */
+.field--name {
+	display: none;
+}
+
+body.is-submit .field--name {
+	display: block;
 }
 
 .title-input {
@@ -105,12 +115,17 @@ body {
 
 body.is-readonly .masthead__heading,
 body.is-readonly .masthead__sub,
-body.is-readonly .field__label {
+body.is-submit .masthead__heading,
+body.is-submit .masthead__sub,
+body.is-readonly .field:not(.field--name) .field__label,
+body.is-submit .field:not(.field--name) .field__label {
 	display: none;
 }
 
 body.is-readonly .title-input,
-body.is-readonly .instructions-input {
+body.is-readonly .instructions-input,
+body.is-submit .title-input,
+body.is-submit .instructions-input {
 	border: 0;
 	padding: 0;
 	background: none;
@@ -118,12 +133,14 @@ body.is-readonly .instructions-input {
 	cursor: default;
 }
 
-body.is-readonly .title-input {
+body.is-readonly .title-input,
+body.is-submit .title-input {
 	font-size: clamp(1.5rem, 7vw, 2.15rem);
 	font-weight: 700;
 }
 
-body.is-readonly .instructions-input {
+body.is-readonly .instructions-input,
+body.is-submit .instructions-input {
 	resize: none;
 	overflow: hidden;
 	color: var(--muted);
@@ -170,6 +187,7 @@ body.is-readonly .instructions-input {
 	list-style: none;
 	margin: 0;
 	padding: 0;
+	counter-reset: aspect;
 }
 
 .task-row {
@@ -183,6 +201,7 @@ body.is-readonly .instructions-input {
 	align-items: center;
 	padding: 0.85rem 0;
 	border-bottom: 1px solid var(--line);
+	counter-increment: aspect;
 }
 
 /* Let grid children shrink below their intrinsic width (a text input defaults to ~20ch),
@@ -191,9 +210,33 @@ body.is-readonly .instructions-input {
 	min-width: 0;
 }
 
-.row-label {
+/* The label cell holds an optional number (shown when "Numbered") + the editable label. */
+.row-head {
 	grid-area: label;
-	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-width: 0;
+}
+
+.row-num {
+	display: none;
+	flex: none;
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+}
+
+#rows.ordered .row-num {
+	display: inline;
+}
+
+#rows.ordered .row-num::before {
+	content: counter(aspect) '.';
+}
+
+.row-label {
+	flex: 1;
+	min-width: 0;
 	font-family: inherit;
 	font-size: 1rem;
 	color: var(--ink);
@@ -280,6 +323,12 @@ body.is-readonly .instructions-input {
 	font-weight: 600;
 }
 
+.btn[aria-pressed='true'] {
+	background: var(--accent);
+	color: #fff;
+	border-color: var(--accent);
+}
+
 .btn:disabled {
 	opacity: 0.6;
 	cursor: default;
@@ -352,6 +401,19 @@ body.is-readonly .instructions-input {
 	background: var(--note-bg);
 	border-bottom: 1px solid var(--note-line);
 	font-size: 0.9rem;
+}
+
+/* Manual-copy fallback field (insecure contexts where the Clipboard API is unavailable). */
+.copy-field {
+	display: block;
+	width: 100%;
+	margin-top: 0.3rem;
+	font-family: ui-monospace, Menlo, Consolas, monospace;
+	font-size: 0.82rem;
+	padding: 0.35rem 0.45rem;
+	border: 1px solid var(--note-line);
+	border-radius: 4px;
+	background: #fff;
 }
 
 .banner {
@@ -464,5 +526,81 @@ body.is-readonly .instructions-input {
 	.task-row {
 		break-inside: avoid;
 		border-bottom: 1px solid #000;
+	}
+}
+
+/* --- GitHub corner (octocat) --- */
+
+.github-corner {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 10;
+}
+
+.github-corner svg {
+	display: block;
+	border: 0;
+	width: 80px;
+	height: 80px;
+	fill: #151513; /* the black corner */
+	color: #fff; /* the octocat */
+}
+
+.octo-arm {
+	transform-origin: 130px 106px;
+}
+
+.github-corner:hover .octo-arm {
+	animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+	0%,
+	100% {
+		transform: rotate(0);
+	}
+	20%,
+	60% {
+		transform: rotate(-25deg);
+	}
+	40%,
+	80% {
+		transform: rotate(10deg);
+	}
+}
+
+@media (max-width: 500px) {
+	.github-corner svg {
+		width: 56px;
+		height: 56px;
+	}
+}
+
+/* --- per-mode control visibility --- */
+
+/* Read-only: only Print remains (plus the banner links). */
+body.is-readonly #add,
+body.is-readonly #reset,
+body.is-readonly #ordered-toggle,
+body.is-readonly #copy,
+body.is-readonly #share,
+body.is-readonly #download,
+body.is-readonly .row-remove {
+	display: none;
+}
+
+/* Submission: lock the teacher's structure; keep Copy / Download / Print + the name field. */
+body.is-submit #add,
+body.is-submit #reset,
+body.is-submit #ordered-toggle,
+body.is-submit #share,
+body.is-submit .row-remove {
+	display: none;
+}
+
+@media print {
+	.github-corner {
+		display: none;
 	}
 }

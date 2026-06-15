@@ -62,6 +62,8 @@
 		T.eq('starts with exactly one row', S.defaultState().rows.length, 1);
 		T.eq('starts that row at the balanced midpoint', S.defaultState().rows[0].value, S.VALUE_DEFAULT);
 		T.eq('starts not read-only', S.defaultState().readonly, false);
+		T.eq('starts unordered', S.defaultState().ordered, false);
+		T.eq('starts with no name', S.defaultState().name, '');
 		T.ok('returns a frozen object', Object.isFrozen(S.defaultState()));
 	});
 
@@ -129,5 +131,9 @@
 		T.eq('regenerates a missing id', S.validateState({ rows: [{ label: 'A', value: 10 }] }).rows[0].id, 'r1');
 		T.eq('drops a non-object row', S.validateState({ rows: [null, { id: 'r1', label: 'A', value: 10 }] }).rows.length, 1);
 		T.eq('defaults a missing title to empty', S.validateState({ rows: [] }).title, '');
+		T.eq('keeps ordered=true', S.validateState({ rows: [], ordered: true }).ordered, true);
+		T.eq('defaults ordered to false', S.validateState({ rows: [] }).ordered, false);
+		T.eq('keeps a string name', S.validateState({ rows: [], name: 'Ada' }).name, 'Ada');
+		T.eq('defaults a missing name to empty', S.validateState({ rows: [] }).name, '');
 	});
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -17,7 +17,7 @@
 
 	var Slider = (root.Slider = root.Slider || {});
 
-	var SCHEMA_VERSION = 1;
+	var SCHEMA_VERSION = 2;
 	var VALUE_MIN = 0;
 	var VALUE_MAX = 100;
 	var VALUE_DEFAULT = 50;
@@ -84,6 +84,8 @@
 			title: '',
 			instructions: '',
 			rows: [{ id: 'r1', label: '', value: VALUE_DEFAULT }],
+			ordered: false, // numbered (process steps) vs unordered (independent aspects)
+			name: '', // the responder's name, filled in submission mode
 			readonly: false,
 		});
 	}
@@ -165,6 +167,8 @@
 			title: typeof parsed.title === 'string' ? parsed.title : '',
 			instructions: typeof parsed.instructions === 'string' ? parsed.instructions : '',
 			rows: rows,
+			ordered: parsed.ordered === true,
+			name: typeof parsed.name === 'string' ? parsed.name : '',
 			readonly: false,
 		});
 	}

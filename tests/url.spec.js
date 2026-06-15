@@ -42,6 +42,12 @@
 
 		var locked = { schemaVersion: 1, title: '', instructions: '', rows: S.defaultState().rows, readonly: true };
 		T.eq('drops readonly from the encoded payload', roundTrip(locked).state.readonly, false);
+
+		var ordered = { schemaVersion: 2, title: '', instructions: '', ordered: true, name: '', rows: S.defaultState().rows };
+		T.eq('preserves ordered = true', roundTrip(ordered).state.ordered, true);
+
+		var named = { schemaVersion: 2, title: '', instructions: '', ordered: false, name: 'Ada Lovelace', rows: S.defaultState().rows };
+		T.eq('preserves the responder name', roundTrip(named).state.name, 'Ada Lovelace');
 	});
 
 	T.group('decodeState fail-soft', function () {
@@ -66,10 +72,11 @@
 		T.ok('always yields a usable state from garbage', S.decodeState(new URLSearchParams('d=%FFnonsense')).state.rows.length >= 0);
 	});
 
-	T.group('detectReadonly', function () {
-		T.eq('false when the param is absent', S.detectReadonly(new URLSearchParams()), false);
-		T.eq('true for a bare ?readonly', S.detectReadonly(new URLSearchParams('readonly')), true);
-		T.eq('true for ?readonly= (empty value)', S.detectReadonly(new URLSearchParams('readonly=')), true);
-		T.eq('true even for ?readonly=false (presence only)', S.detectReadonly(new URLSearchParams('readonly=false')), true);
+	T.group('detectMode', function () {
+		T.eq('edit when no flags', S.detectMode(new URLSearchParams()), 'edit');
+		T.eq('readonly for ?readonly', S.detectMode(new URLSearchParams('readonly')), 'readonly');
+		T.eq('readonly for ?readonly=false (presence only)', S.detectMode(new URLSearchParams('readonly=false')), 'readonly');
+		T.eq('submit for ?submit', S.detectMode(new URLSearchParams('submit')), 'submit');
+		T.eq('readonly wins when both present', S.detectMode(new URLSearchParams('readonly&submit')), 'readonly');
 	});
 })(typeof globalThis !== 'undefined' ? globalThis : this);
