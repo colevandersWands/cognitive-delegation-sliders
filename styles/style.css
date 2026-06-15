@@ -531,24 +531,12 @@ body.is-submit .instructions-input {
 
 /* --- GitHub corner (octocat) --- */
 
-.github-corner {
-	position: absolute;
-	top: 0;
-	right: 0;
-	z-index: 10;
-}
-
+/* Position, fill, and color live INLINE on the SVG (Tim Holman's github-corners) so a stale
+   cache or an unexpected cascade can't break them (otherwise the anchor falls back to inline
+   top-left and the cat's currentColor becomes the violet visited-link colour). This block only
+   adds the wave animation, the small-screen size, and print hiding. */
 .github-corner svg {
-	display: block;
-	border: 0;
-	width: 80px;
-	height: 80px;
-	fill: #151513; /* the black corner */
-	color: #fff; /* the octocat */
-}
-
-.octo-arm {
-	transform-origin: 130px 106px;
+	z-index: 10;
 }
 
 .github-corner:hover .octo-arm {
