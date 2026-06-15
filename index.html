@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Human–AI Slider Model</title>
+		<meta
+			name="description"
+			content="Place tasks on a spectrum from Productive Struggle to Cognitive Delegation. Share as a link, print as a rubric."
+		/>
+		<!-- Relative paths only: this is served from a GitHub Pages project sub-path. -->
+		<link rel="stylesheet" href="./styles/style.css" />
+		<link rel="stylesheet" href="./styles/slider.css" />
+	</head>
+	<body>
+		<!-- Fail-soft messages (bad shared link, clipboard fallback). Hidden until used. -->
+		<div id="notice" class="notice" role="status" hidden></div>
+
+		<!-- Shown only in a read-only shared view. -->
+		<div id="banner" class="banner" role="status" hidden>
+			<span>Read-only shared view — values can’t be changed here.</span>
+			<a id="editcopy" href="./" target="_blank" rel="noopener">Open an editable copy</a>
+		</div>
+
+		<main class="sheet">
+			<header class="masthead">
+				<h1 class="masthead__heading">Human–AI Slider Model</h1>
+				<p class="masthead__sub">Productive Struggle ↔ Cognitive Delegation</p>
+
+				<label class="field">
+					<span class="field__label">Title</span>
+					<input
+						id="title"
+						class="title-input"
+						type="text"
+						placeholder="Untitled — name this exercise"
+						autocomplete="off"
+					/>
+				</label>
+				<label class="field">
+					<span class="field__label">Instructions</span>
+					<textarea
+						id="instructions"
+						class="instructions-input"
+						rows="2"
+						placeholder="Optional: what is this for? (e.g. “Essay 2 — where your AI use should sit.”)"
+					></textarea>
+				</label>
+			</header>
+
+			<!-- Pole labels over the slider column (desktop only; hidden when rows stack). -->
+			<div class="spectrum-head" aria-hidden="true">
+				<span></span>
+				<span></span>
+				<span class="poles">
+					<span class="pole pole--human">
+						<strong>HUMAN</strong><small>Productive Struggle</small>
+					</span>
+					<span class="pole pole--ai">
+						<strong>AI</strong><small>Cognitive Delegation</small>
+					</span>
+				</span>
+				<span></span>
+				<span></span>
+			</div>
+
+			<ul id="rows" class="rows"></ul>
+
+			<div class="controls" role="toolbar" aria-label="Actions">
+				<button id="add" type="button" class="btn btn--primary">+ Add task</button>
+				<button id="reset" type="button" class="btn">Reset</button>
+				<span class="controls__spacer"></span>
+				<button id="copy" type="button" class="btn">Copy link</button>
+				<button id="share" type="button" class="btn">Share read-only</button>
+				<button id="print" type="button" class="btn">Print</button>
+			</div>
+
+			<details class="about">
+				<summary>About this framework</summary>
+				<div class="about__body">
+					<p>
+						<strong>A thinking tool, not rules.</strong> It helps you decide how to
+						collaborate with AI based on your learning goals and your competence in the
+						task at hand. You keep control of the goals and the decisions; the framework
+						only makes the trade-off visible.
+					</p>
+					<p>
+						<strong>The spectrum.</strong> Each task sits somewhere between two poles. On
+						the left, <em>Productive Struggle</em> — you do the thinking yourself, reaching
+						for AI only after genuine effort. On the right, <em>Cognitive Delegation</em> —
+						you intentionally divide the <em>thinking</em> work (not just the mechanical
+						work) with AI, while keeping control of the goals. Most real work lands in
+						between, and a task can move along the slider as you go.
+					</p>
+					<p>
+						<strong>Understanding is non-delegable.</strong> AI can do many things
+						<em>for</em> you. It cannot <em>understand</em> for you. Sliding toward AI
+						delegates the task, not the learning — a skill is yours when you can do it
+						without AI. Worth keeping in view whenever the point is for someone to learn,
+						not just to finish.
+					</p>
+					<p>
+						<strong>Two ways to use it.</strong> <em>Diagnostically</em> — “which approach
+						am I currently using, and does it match my goal?” <em>Prescriptively</em> —
+						“given my goal and constraints, which approach should I adopt?” Educators tend
+						to use it prescriptively (scoping an assignment); learners diagnostically
+						(reflecting on what they actually did).
+					</p>
+					<p>
+						<strong>One axis, honestly.</strong> This is a single Human↔AI spectrum. It
+						deliberately doesn’t capture whether you’re <em>learning</em> a skill or
+						<em>applying</em> one already mastered — the same setting can mean opposite
+						things in those two cases. Read each one with that question in mind, and give
+						every task its own slider rather than collapsing a whole assignment to one.
+					</p>
+					<p>
+						<strong>On shared links.</strong> A read-only link records a <em>shared
+						intent</em>, not a lock. It says where the work is meant to sit; it can’t police
+						where the work actually happens. Treat it as a conversation starter — anyone
+						can open an editable copy.
+					</p>
+					<p class="about__caveat">
+						<strong>Prerequisites.</strong> This model assumes the ethical, legal, equity,
+						environmental, and academic-integrity questions have already been considered and
+						appropriate tools selected.
+					</p>
+				</div>
+			</details>
+		</main>
+
+		<noscript>
+			<p class="notice" style="display: block">
+				This tool needs JavaScript to place and share sliders.
+			</p>
+		</noscript>
+
+		<!-- Classic scripts in dependency order — no ES modules, so this page opens straight
+		     off the filesystem (double-click index.html; no server, no build). -->
+		<script src="./src/core.js"></script>
+		<script src="./src/url.js"></script>
+		<script src="./src/ui.js"></script>
+		<script src="./src/main.js"></script>
+	</body>
+</html>

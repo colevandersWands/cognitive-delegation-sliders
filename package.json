@@ -1,0 +1,11 @@
+{
+  "name": "human-ai-slider-model",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive Human-AI Slider Model — place tasks on a Productive Struggle ↔ Cognitive Delegation spectrum, share as a link, print as a rubric. Pure static, no build, no dependencies; opens straight off the filesystem.",
+  "scripts": {
+    "test": "node tests/run.js",
+    "serve": "npx --yes serve ."
+  },
+  "license": "MIT"
+}

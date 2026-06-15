@@ -1,0 +1,168 @@
+/* slider.css — the hand-drawn slider: a thin ink rule with small vertical end-caps and a
+   flat filled dot for the thumb. We style the NATIVE <input type=range> (never replace it),
+   so keyboard, touch, and screen-reader support come for free.
+
+   Mobile-first: a generous touch target and a larger dot on phones; tighter on desktop.
+
+   Cross-browser warning: WebKit and Firefox position the thumb differently and need
+   SEPARATE rules. A selector list mixing ::-webkit-* and ::-moz-* is invalid as a whole,
+   so each engine gets its own block. */
+
+.slider {
+	position: relative;
+	/* Half a thumb of horizontal padding so the dot's centre can reach the end-caps at 0
+	   and 100 without overflowing past them. */
+	padding: 0 11px;
+}
+
+/* The small vertical end-caps, drawn on the wrapper (form controls don't reliably render
+   ::before/::after, so they live here). */
+.slider::before,
+.slider::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 1px;
+	height: 13px;
+	background: var(--ink, #1a1a1a);
+}
+
+.slider::before {
+	left: 0;
+}
+
+.slider::after {
+	right: 0;
+}
+
+.row-slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 2.5rem; /* touch target; the visible track is thin and centred within it */
+	margin: 0;
+	background: transparent; /* kill the default track fill */
+	cursor: pointer;
+	--track-h: 2px;
+	--thumb: 22px;
+}
+
+/* --- WebKit / Blink (Chrome, Safari, Edge) --- */
+
+.row-slider::-webkit-slider-runnable-track {
+	height: var(--track-h);
+	background: var(--ink, #1a1a1a);
+	border-radius: 0;
+}
+
+.row-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: var(--thumb);
+	height: var(--thumb);
+	background: var(--ink, #1a1a1a);
+	border: none;
+	border-radius: 50%;
+	/* WebKit positions the thumb from the TOP of the track box, so centre it manually. */
+	margin-top: calc((var(--track-h) - var(--thumb)) / 2);
+}
+
+/* --- Firefox --- */
+
+.row-slider::-moz-range-track {
+	height: var(--track-h);
+	background: var(--ink, #1a1a1a);
+}
+
+/* Firefox fills the track left of the thumb; force it to the same ink so the rule reads as
+   one uniform line (locked decision: nothing else on the track). */
+.row-slider::-moz-range-progress {
+	height: var(--track-h);
+	background: var(--ink, #1a1a1a);
+}
+
+.row-slider::-moz-range-thumb {
+	width: var(--thumb);
+	height: var(--thumb);
+	background: var(--ink, #1a1a1a);
+	border: none;
+	border-radius: 50%;
+	/* Firefox auto-centres the thumb on the track — do NOT add margin-top here. */
+}
+
+/* --- focus ring re-expressed on the thumb (the default outline is cleared globally) --- */
+
+.row-slider:focus-visible::-webkit-slider-thumb {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #1b3a6b) 45%, transparent);
+}
+
+.row-slider:focus-visible::-moz-range-thumb {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #1b3a6b) 45%, transparent);
+}
+
+/* --- read-only view: keep the dot crisp black (override UA disabled dimming) so a shared
+   rubric / screenshot / print stays legible --- */
+
+body.is-readonly .row-slider {
+	opacity: 1;
+	cursor: default;
+}
+
+body.is-readonly .row-slider::-webkit-slider-thumb {
+	background: var(--ink, #1a1a1a);
+}
+
+body.is-readonly .row-slider::-moz-range-thumb {
+	background: var(--ink, #1a1a1a);
+}
+
+/* --- desktop: a tighter dot for mouse precision --- */
+
+@media (min-width: 40rem) {
+	.row-slider {
+		height: 1.9rem;
+		--thumb: 16px;
+	}
+}
+
+/* --- print: native range thumbs print inconsistently across engines, so draw a
+   deterministic static dot from the --val custom property (kept in sync by the shell).
+   Hidden on screen; shown only when printing. --- */
+
+.print-dot {
+	display: none;
+}
+
+@media print {
+	.row-slider {
+		visibility: hidden; /* hide the live control; the static rule + dot stand in */
+		height: 1.5rem;
+	}
+
+	.slider::before,
+	.slider::after {
+		height: 10px;
+		background: #000;
+	}
+
+	.slider {
+		background-image: linear-gradient(#000, #000);
+		background-size: calc(100% - 22px) 1px;
+		background-position: 11px center;
+		background-repeat: no-repeat;
+	}
+
+	.print-dot {
+		display: block;
+		position: absolute;
+		top: 50%;
+		/* travel matches the thumb's: 11px..(100% - 11px) across the padded track */
+		left: calc(11px + (var(--val, 50) * 0.01) * (100% - 22px));
+		width: 11px;
+		height: 11px;
+		background: #000;
+		border-radius: 50%;
+		transform: translate(-50%, -50%);
+	}
+}

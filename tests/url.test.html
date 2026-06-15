@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>url.js tests</title>
+		<style>
+			body {
+				font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+				max-width: 52rem;
+				margin: 2rem auto;
+				padding: 0 1rem;
+				color: #1a1a1a;
+			}
+			a {
+				color: #1b3a6b;
+			}
+			.summary {
+				font-size: 1.15rem;
+				font-weight: 700;
+				padding: 0.55rem 0.8rem;
+				border-radius: 6px;
+				display: inline-block;
+			}
+			.pass {
+				background: #e6f4ea;
+				color: #1e4620;
+			}
+			.fail {
+				background: #fde8e8;
+				color: #7a1c1c;
+			}
+			pre {
+				background: #fafafa;
+				border: 1px solid #e2e2e2;
+				border-radius: 6px;
+				padding: 1rem;
+				overflow: auto;
+				line-height: 1.55;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>url.js — tests</h1>
+		<p>
+			<a href="./core.test.html">core.js tests →</a> ·
+			<a href="../index.html">← back to the tool</a>
+		</p>
+
+		<!-- url.js depends on core.js, so load core first. -->
+		<script src="../src/core.js"></script>
+		<script src="../src/url.js"></script>
+		<script src="./harness.js"></script>
+		<script src="./url.spec.js"></script>
+		<script>
+			T.report('url.js');
+		</script>
+	</body>
+</html>

@@ -1,0 +1,468 @@
+/* style.css — mobile-first. Base rules target a narrow phone screen; the min-width block
+   near the bottom enhances to a wide layout. The native-range slider is styled in slider.css.
+
+   Row anatomy (5 logical pieces): label | human% | slider | AI% | remove.
+   On mobile they stack into two lines; on desktop they sit on one. */
+
+:root {
+	--font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+	--ink: #1a1a1a; /* near-black body text */
+	--muted: #585858; /* secondary text — AA on white */
+	--accent: #1b3a6b; /* deep blue poles/links — ~9:1 on white, AA for text */
+	--line: #d8d8d8; /* hairlines */
+	--bg: #ffffff;
+	--note-bg: #fff7e6;
+	--note-line: #e6c270;
+
+	--measure: 42rem;
+	--tap: 44px; /* minimum comfortable touch target */
+}
+
+* {
+	box-sizing: border-box;
+}
+
+/* The `hidden` attribute must win over component display rules (.banner is display:flex,
+   which would otherwise show a hidden banner). */
+[hidden] {
+	display: none !important;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: var(--font-sans);
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+.sheet {
+	max-width: 56rem;
+	margin: 0 auto;
+	padding: 1.25rem 1rem 4rem;
+}
+
+/* --- masthead --- */
+
+.masthead__heading {
+	margin: 0;
+	font-size: clamp(1.5rem, 7vw, 2.2rem);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+
+.masthead__sub {
+	margin: 0.15rem 0 1.5rem;
+	color: var(--muted);
+	font-size: 1.02rem;
+}
+
+.field {
+	display: block;
+	margin-bottom: 0.9rem;
+}
+
+.field__label {
+	display: block;
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 0.25rem;
+}
+
+.title-input,
+.instructions-input {
+	width: 100%;
+	font-family: inherit;
+	color: var(--ink);
+	background: transparent;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	padding: 0.55rem 0.65rem;
+}
+
+.title-input {
+	font-size: 1.15rem;
+	font-weight: 600;
+}
+
+.instructions-input {
+	resize: vertical;
+	font-size: 0.95rem;
+}
+
+/* --- read-only header swap: hide the generic masthead; the saved title/description take
+   its place. Reverts automatically when `readonly` leaves the URL (no .is-readonly). --- */
+
+body.is-readonly .masthead__heading,
+body.is-readonly .masthead__sub,
+body.is-readonly .field__label {
+	display: none;
+}
+
+body.is-readonly .title-input,
+body.is-readonly .instructions-input {
+	border: 0;
+	padding: 0;
+	background: none;
+	opacity: 1; /* override the UA disabled dimming */
+	cursor: default;
+}
+
+body.is-readonly .title-input {
+	font-size: clamp(1.5rem, 7vw, 2.15rem);
+	font-weight: 700;
+}
+
+body.is-readonly .instructions-input {
+	resize: none;
+	overflow: hidden;
+	color: var(--muted);
+	font-size: 1rem;
+	margin-top: 0.1rem;
+}
+
+/* --- spectrum header (pole labels): hidden on mobile, shown on desktop --- */
+
+.spectrum-head {
+	display: none;
+}
+
+.poles {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+}
+
+.pole {
+	display: flex;
+	flex-direction: column;
+	color: var(--accent);
+	line-height: 1.15;
+}
+
+.pole--ai {
+	text-align: right;
+}
+
+.pole strong {
+	font-size: 0.85rem;
+	letter-spacing: 0.06em;
+}
+
+.pole small {
+	color: var(--muted);
+	font-size: 0.72rem;
+}
+
+/* --- rows: mobile-first two-line layout --- */
+
+.rows {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.task-row {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	grid-template-areas:
+		'label  label   remove'
+		'human  slider  ai';
+	column-gap: 0.6rem;
+	row-gap: 0.3rem;
+	align-items: center;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--line);
+}
+
+/* Let grid children shrink below their intrinsic width (a text input defaults to ~20ch),
+   so rows never overflow a narrow phone viewport. */
+.task-row > * {
+	min-width: 0;
+}
+
+.row-label {
+	grid-area: label;
+	width: 100%;
+	font-family: inherit;
+	font-size: 1rem;
+	color: var(--ink);
+	background: transparent;
+	border: 0;
+	border-bottom: 1px solid transparent;
+	padding: 0.35rem 0;
+}
+
+.row-label:hover {
+	border-bottom-color: var(--line);
+}
+
+.row-human,
+.row-ai {
+	font-size: 0.82rem;
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.row-human {
+	grid-area: human;
+	text-align: right;
+}
+
+.row-ai {
+	grid-area: ai;
+	text-align: left;
+}
+
+.row-remove {
+	grid-area: remove;
+	justify-self: end;
+	width: var(--tap);
+	height: var(--tap);
+	line-height: 1;
+	font-size: 1.25rem;
+	color: var(--muted);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.row-remove:hover {
+	color: var(--ink);
+	border-color: var(--line);
+}
+
+/* --- controls (touch-friendly) --- */
+
+.controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 1.5rem;
+}
+
+.controls__spacer {
+	flex-basis: 100%;
+}
+
+.btn {
+	font-family: inherit;
+	font-size: 0.95rem;
+	min-height: var(--tap);
+	color: var(--ink);
+	background: transparent;
+	border: 1px solid var(--ink);
+	border-radius: 6px;
+	padding: 0.5rem 0.9rem;
+	cursor: pointer;
+}
+
+.btn:hover {
+	background: #f2f2f2;
+}
+
+.btn--primary {
+	border-color: var(--accent);
+	color: var(--accent);
+	font-weight: 600;
+}
+
+.btn:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+/* --- about --- */
+
+.about {
+	margin-top: 1.75rem;
+	border-top: 1px solid var(--line);
+	padding-top: 1rem;
+}
+
+.about summary {
+	cursor: pointer;
+	font-weight: 600;
+	color: var(--accent);
+	min-height: var(--tap);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	list-style: none; /* we draw our own chevron below */
+}
+
+/* Hide the native disclosure markers (display:flex already drops them in some engines). */
+.about summary::-webkit-details-marker {
+	display: none;
+}
+
+/* A chevron that makes the dropdown obvious: points right when closed, down when open. */
+.about summary::before {
+	content: '';
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.15s ease;
+}
+
+.about[open] summary::before {
+	transform: rotate(45deg);
+}
+
+.about summary:hover {
+	text-decoration: underline;
+}
+
+.about__body {
+	max-width: var(--measure);
+	margin-top: 0.5rem;
+}
+
+.about__body p {
+	margin: 0 0 0.8rem;
+	font-size: 0.95rem;
+}
+
+.about__caveat {
+	color: var(--muted);
+	font-size: 0.88rem;
+}
+
+/* --- notice + banner --- */
+
+.notice {
+	margin: 0;
+	padding: 0.65rem 1rem;
+	background: var(--note-bg);
+	border-bottom: 1px solid var(--note-line);
+	font-size: 0.9rem;
+}
+
+.banner {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1rem;
+	align-items: center;
+	padding: 0.65rem 1rem;
+	background: #eef2f8;
+	border-bottom: 1px solid #c7d3e6;
+	font-size: 0.92rem;
+}
+
+.banner a {
+	color: var(--accent);
+	font-weight: 600;
+}
+
+/* --- focus visibility (a11y) --- */
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.001ms !important;
+		animation-duration: 0.001ms !important;
+	}
+}
+
+/* --- desktop enhancement: one-line rows + the pole header --- */
+
+@media (min-width: 40rem) {
+	:root {
+		--row-cols: minmax(6rem, 12rem) 4.4rem minmax(7rem, 1fr) 3.8rem var(--tap);
+	}
+
+	.sheet {
+		padding: 1.75rem 2.5rem 4rem;
+	}
+
+	.notice,
+	.banner {
+		padding-left: 2.5rem;
+		padding-right: 2.5rem;
+	}
+
+	.spectrum-head {
+		display: grid;
+		grid-template-columns: var(--row-cols);
+		column-gap: 0.7rem;
+		align-items: end;
+		margin: 1.75rem 0 0.4rem;
+		padding-bottom: 0.35rem;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.task-row {
+		grid-template-columns: var(--row-cols);
+		grid-template-areas: 'label human slider ai remove';
+		column-gap: 0.7rem;
+		row-gap: 0;
+	}
+}
+
+/* --- print: a clean black-on-white rubric, one page --- */
+
+@media print {
+	@page {
+		size: letter;
+		margin: 0.5in;
+	}
+
+	body {
+		font-size: 10pt;
+		color: #000;
+		background: #fff;
+	}
+
+	.notice,
+	.banner,
+	.controls,
+	.row-remove,
+	.field__label,
+	.about summary {
+		display: none !important;
+	}
+
+	/* The framework panel prints only if the reader expanded it (native <details> state). */
+
+	.sheet {
+		max-width: none;
+		padding: 0;
+	}
+
+	.title-input,
+	.instructions-input,
+	.row-label {
+		border: 0;
+		padding: 0;
+		color: #000;
+		background: none;
+	}
+
+	.task-row {
+		break-inside: avoid;
+		border-bottom: 1px solid #000;
+	}
+}
